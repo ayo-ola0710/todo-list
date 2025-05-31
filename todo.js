@@ -2,29 +2,56 @@ const inputBox = document.querySelector(".todo-input");
 const addBtn = document.querySelector(".add-btn");
 const list = document.querySelector(".todo-list");
 
-let tasks  = loadFromLocalStorage();
+let tasks = loadFromLocalStorage();
+
+function generateId() {
+  return Math.floor(Math.random() * 100) + 1;
+}
 
 function addTask() {
-   if (inputBox.value === "") {
-      document.querySelector(".message").textContent = "PLS ENTER A TASK"
-   } else {
-      document.querySelector(".message").textContent = ""
+  const newTaskText = inputBox.value.trim();
+  const isDuplicate = tasks.some(
+    (task) => task.text.toLowerCase() === newTaskText.toLowerCase()
+  );
+  if (isDuplicate) {
+    const messageElement = document.querySelector(".message");
+    messageElement.textContent = "TASK ALREADY EXISTS";
+    setTimeout(() => {
+      messageElement.textContent = "";
+    }, 4000);
+    return;
+  }
+  if (newTaskText === "") {
+    const messageElement = document.querySelector(".message");
+    messageElement.textContent = "PLS ENTER A TASK";
+    setTimeout(() => {
+      messageElement.textContent = "";
+    }, 3000);
+  } else {
+    document.querySelector(".message").textContent = "";
 
-      const taskObj = {
-         text: inputBox.value,
-         completed: false,
-      };
+    const taskObj = {
+      id: generateId(),
+      text: inputBox.value,
+      completed: false,
+    };
 
-      tasks.push(taskObj);
+    tasks.push(taskObj);
 
-      saveToLocalStorage(tasks); 
+    saveToLocalStorage(tasks);
 
-      createTaskElement(taskObj);
-   }   
-   inputBox.value = ""
+    createTaskElement(taskObj);
+  }
+  inputBox.value = "";
 }
 
 addBtn.addEventListener("click", addTask);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    addTask();
+  }
+});
 
 function saveToLocalStorage(list) {
   localStorage.setItem("task", JSON.stringify(list));
@@ -36,52 +63,45 @@ function loadFromLocalStorage() {
 }
 
 function createTaskElement(taskObj) {
-   const li = document.createElement("li");
-   li.classList.add("todo-item")
+  const li = document.createElement("li");
+  li.classList.add("todo-item");
 
-   const conatain  = document.createElement("div");
+  const conatain = document.createElement("div");
 
-   const checkBox = document.createElement("input");
-   checkBox.type = "checkbox"
-   checkBox.checked = taskObj.completed;
-   checkBox.addEventListener("change",toggle )
+  const checkBox = document.createElement("input");
+  checkBox.type = "checkbox";
+  checkBox.checked = taskObj.completed;
+  checkBox.addEventListener("change", toggle);
 
-   function toggle() {
-     if (checkBox.checked) {
-        task.classList.add("done");
-     } else {
-        task.classList.remove("done");
-     }
-     saveToLocalStorage(tasks)
-   } 
+  function toggle() {
+    task.classList.toggle("done");
+    saveToLocalStorage(tasks);
+  }
 
-   const task = document.createElement("span");
-   task.classList.add("task-text");
-   task.textContent = taskObj.text;
+  const task = document.createElement("span");
+  task.classList.add("task-text");
+  task.textContent = taskObj.text;
 
-   const btn = document.createElement("button")
-   btn.textContent = "x";
-   btn.classList = "delete";
-    
-   function deleteTask() {
-      li.remove();
-      tasks = tasks.filter(t => t !== taskObj); 
-      saveToLocalStorage(tasks); 
-   }
-    
-   btn.addEventListener("click", deleteTask)
+  const btn = document.createElement("button");
+  btn.textContent = "x";
+  btn.classList = "delete";
 
+  function deleteTask() {
+    li.remove();
+    tasks = tasks.filter((task) => task !== taskObj);
+    saveToLocalStorage(tasks);
+  }
 
-   conatain.appendChild(checkBox);
-   conatain.appendChild(task);
-   li.appendChild(conatain);
-   li.appendChild(btn);
-   list.appendChild(li)
-  
+  btn.addEventListener("click", deleteTask);
+
+  conatain.appendChild(checkBox);
+  conatain.appendChild(task);
+  li.appendChild(conatain);
+  li.appendChild(btn);
+  list.appendChild(li);
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-   tasks = loadFromLocalStorage();
-   tasks.forEach(taskObj => createTaskElement(taskObj));
+  tasks = loadFromLocalStorage();
+  tasks.forEach((taskObj) => createTaskElement(taskObj));
 });
- 
